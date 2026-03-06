@@ -2,24 +2,27 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, request, session
 from src.helper import download_hugging_face_embeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_community.utilities import SerpAPIWrapper
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 from dotenv import load_dotenv
 from src.prompt import *
 
 load_dotenv()
 
+app = Flask(__name__, template_folder='../templates')
+app.secret_key = os.urandom(24)  # needed for session
+
 os.environ["PINECONE_API_KEY"] = os.environ.get('PINECONE_API_KEY')
 os.environ["OPENAI_API_KEY"] = os.environ.get('OPENAI_API_KEY')
-os.environ["SERPAPI_API_KEY"] = os.environ.get('SERPAPI_API_KEY')
-
-app = Flask(__name__, template_folder='../templates')
 
 embeddings = download_hugging_face_embeddings()
 
@@ -30,56 +33,60 @@ docsearch = PineconeVectorStore.from_existing_index(
 
 retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
-chatModel = ChatOpenAI(model="gpt-4.1-mini")
+chatModel = ChatOpenAI(model="gpt-4.1-mini", temperature=0.5)
 
-# Web search tool
-search = SerpAPIWrapper()
+# Updated prompt with chat history placeholder
+prompt = ChatPromptTemplate.from_messages([
+    ("system", system_prompt),
+    MessagesPlaceholder("chat_history"),   # ← history injected here
+    ("human", "{input}"),
+])
 
-def is_context_relevant(docs, threshold=3):
-    """Check if retrieved docs have enough content"""
-    total_content = " ".join([doc.page_content for doc in docs])
-    return len(total_content.strip()) > threshold
+question_answer_chain = create_stuff_documents_chain(chatModel, prompt)
+rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
-def get_answer(user_input):
-    # Step 1 — try RAG first
-    retrieved_docs = retriever.invoke(user_input)
-    
-    web_results = "No web search needed."
+# In-memory store for all sessions
+store = {}
 
-    # Step 2 — if RAG context is weak, search the web
-    if not is_context_relevant(retrieved_docs):
-        print("RAG context insufficient, searching the web...")
-        web_results = search.run(user_input)
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    """Get or create chat history for a session"""
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
 
-    # Step 3 — build prompt with both context and web results
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("human", "{input}"),
-    ])
-
-    question_answer_chain = create_stuff_documents_chain(chatModel, prompt)
-    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-
-    response = rag_chain.invoke({
-        "input": user_input,
-        "web_results": web_results
-    })
-
-    return response["answer"]
+# Wrap rag_chain with history management
+conversational_rag_chain = RunnableWithMessageHistory(
+    rag_chain,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="chat_history",
+    output_messages_key="answer"
+)
 
 
 @app.route("/")
 def index():
-    return render_template('f1-chat.html')
+    # Create unique session id for each user
+    if "session_id" not in session:
+        session["session_id"] = os.urandom(16).hex()
+    return render_template('chat.html')
 
 
 @app.route("/get", methods=["GET", "POST"])
 def chat():
     msg = request.form["msg"]
     print("User:", msg)
-    answer = get_answer(msg)
-    print("Bot:", answer)
-    return str(answer)
+
+    # Get session id for this user
+    session_id = session.get("session_id", "default")
+
+    response = conversational_rag_chain.invoke(
+        {"input": msg},
+        config={"configurable": {"session_id": session_id}}
+    )
+
+    print("Bot:", response["answer"])
+    return str(response["answer"])
 
 
 if __name__ == '__main__':
