@@ -1,0 +1,97 @@
+name: workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  intergration:
+    name: Continous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v3
+
+      - name: Lint Code
+        run: echo "Linitng Repository"
+
+      - name: Run Unit test
+        run: echo "Running Unit Test"
+
+  build-and-push-images:
+    name: Continous Delivery
+    needs: intergration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/f1-chatbot:latest
+
+  Continuous-Deployment:
+    needs: build-and-push-images
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Stop and remove old container
+        run: |
+          docker stop f1-chatbot || true
+          docker rm f1-chatbot || true
+
+      - name: Clean old images to free space
+        run: |
+          # Prune images older than 24h to avoid deleting the one we are about to pull
+          docker image prune -af --filter "until=24h"
+
+      - name: Pull latest images
+        run: |
+          docker pull ${{ vars.DOCKERHUB_USERNAME }}/f1-chatbot:latest
+
+      - name: Run Docker Image to serve users
+        run: |
+          docker run -d \
+            -p 8080:8080 \
+            --name=f1-chatbot \
+            -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            -e AWS_DEFAULT_REGION=${{ secrets.AWS_REGION }} \
+            -e PINECONE_API_KEY=${{ secrets.PINECONE_API_KEY }} \
+            -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            -e SERPAPI_API_KEY=${{ secrets.SERPAPI_API_KEY }} \
+            ${{ vars.DOCKERHUB_USERNAME }}/f1-chatbot:latest
+
+      - name: Clean previous images and containers
+        run: |
+          docker system prune -f
