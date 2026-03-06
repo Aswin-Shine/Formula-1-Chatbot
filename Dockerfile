@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8080
 
-CMD ["python3", "flask_api/app.py"]
+CMD ["python3", "Flask_api/app.py"]
