@@ -54,5 +54,14 @@ def text_split(extracted_data):
 
 # Download the Embeddings from HuggingFace
 def download_hugging_face_embeddings():
-    embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')  # returns 384 dimensions
+    model_path = "/app/models/all-MiniLM-L6-v2"
+    
+    if os.path.exists(model_path):
+        # inside Docker — load from local path
+        embeddings = HuggingFaceEmbeddings(model_name=model_path)
+    else:
+        # running locally — download from HuggingFace
+        embeddings = HuggingFaceEmbeddings(
+            model_name='sentence-transformers/all-MiniLM-L6-v2'
+        )
     return embeddings
