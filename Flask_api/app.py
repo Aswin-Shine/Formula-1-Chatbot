@@ -69,7 +69,7 @@ def index():
     # Create unique session id for each user
     if "session_id" not in session:
         session["session_id"] = os.urandom(16).hex()
-    return render_template('chat.html')
+    return render_template('f1-chat.html')
 
 
 @app.route("/get", methods=["GET", "POST"])
