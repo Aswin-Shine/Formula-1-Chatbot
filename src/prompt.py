@@ -6,7 +6,6 @@ If you still don't know, say you don't know.
 
 Context: {context}
 
-Additional Information: {additional_info}
 """
 
 )

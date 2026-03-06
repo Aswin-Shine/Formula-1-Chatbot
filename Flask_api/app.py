@@ -84,27 +84,28 @@ def chat():
 
     # Step 2 — web search via SerpAPI if RAG context is weak
     if is_context_sufficient(retrieved_docs):
-        additional_info = "No additional information needed."
+        final_input = msg
         print("Using RAG context")
     else:
         print("RAG insufficient, searching web via SerpAPI...")
         try:
-            additional_info = search.run(msg)
+            web_results = search.run(msg)
+            # Append web results directly into the user message
+            final_input = f"{msg}\n\n[Web Search Results]: {web_results}"
             print("SerpAPI results found")
         except Exception as e:
-            additional_info = "No additional information available."
+            final_input = msg
             print(f"SerpAPI search failed: {e}")
 
-    # Step 3 — invoke chain
+    # Step 3 — invoke chain with final input
     response = conversational_rag_chain.invoke(
-        {
-            "input": f"{msg}\n\nAdditional Information: {additional_info}"
-        },
+        {"input": final_input},
         config={"configurable": {"session_id": session_id}}
     )
 
     print("Bot:", response["answer"])
     return str(response["answer"])
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080, debug=True)
