@@ -1,15 +1,4 @@
-# 🏎️ Formula 1 AI Chatbot - Production RAG System
-
-> Enterprise-grade conversational AI platform leveraging Retrieval-Augmented Generation (RAG) with hybrid search capabilities, delivering real-time Formula 1 insights through vector embeddings, LLM orchestration, and intelligent fallback mechanisms.
-
-![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-3.1.1-green.svg)
-![LangChain](https://img.shields.io/badge/LangChain-0.3.26-orange.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)
-![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF.svg)
-![Pinecone](https://img.shields.io/badge/Vector%20DB-Pinecone-00C9A7.svg)
-![OpenAI](https://img.shields.io/badge/LLM-GPT--4.1--mini-412991.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+<h1> 🏎️ Formula 1 AI Chatbot - Production RAG System </h1>
 
 ![Project Banner](./docs/images/f1-chatbot-banner.png)
 
@@ -731,18 +720,18 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-```
-
 ---
 
 ## 🎓 Learning Resources
 
 ### Understanding RAG Architecture
+
 - [LangChain RAG Documentation](https://python.langchain.com/docs/use_cases/question_answering/)
 - [Pinecone Vector Database Guide](https://docs.pinecone.io/)
 - [OpenAI API Best Practices](https://platform.openai.com/docs/guides/production-best-practices)
 
 ### MLOps Best Practices
+
 - [Google MLOps Whitepaper](https://cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning)
 - [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
@@ -756,4 +745,3 @@ copies or substantial portions of the Software.
 **Built with ❤️ using MLOps best practices**
 
 </div>
-```
