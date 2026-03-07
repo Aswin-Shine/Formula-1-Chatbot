@@ -655,8 +655,8 @@ Raw Data Sources
 **Aswin Shine**
 
 - 📧 Email: ashwinsh.91@gmail.com
-- 🐙 GitHub: [@yourusername](https://github.com/yourusername)
-- 💼 LinkedIn: [Aswin Shine](https://linkedin.com/in/yourprofile)
+- 🐙 GitHub: [@Aswin-Shine](https://github.com/Aswin-Shine)
+- 💼 LinkedIn: [Aswin Shine](https://www.linkedin.com/in/aswinshine/)
 ---
 
 ## 🙏 Acknowledgments
@@ -680,8 +680,8 @@ This project leverages world-class open-source and commercial technologies:
 
 ### Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/formula-1-chatbot/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/formula-1-chatbot/discussions)
+- **Issues**: [GitHub Issues](https://github.com/Aswin-Shine/formula-1-chatbot/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Aswin-Shine/formula-1-chatbot/discussions)
 - **Email**: ashwinsh.91@gmail.com
 
 ### Contributing
