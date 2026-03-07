@@ -632,7 +632,7 @@ Raw Data Sources
 ```
 
 ### Data Files Overview
-
+```
 | File                            | Records  | Description                                      | Size     |
 | ------------------------------- | -------- | ------------------------------------------------ | -------- |
 | `circuits.csv`                  | ~77      | F1 circuit information (name, location, country) | ~8 KB    |
@@ -719,7 +719,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
+```
 ---
 
 ## 🎓 Learning Resources
