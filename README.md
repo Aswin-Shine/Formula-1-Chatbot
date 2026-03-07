@@ -212,7 +212,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Python Dependencies
 # --no-cache-dir: Reduces image size by not caching pip packages
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements-docker.txt
 
 # Expose Application Port
 EXPOSE 8080
